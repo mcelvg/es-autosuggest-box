@@ -1,0 +1,100 @@
+{
+  "settings": {
+    "index": {
+      "number_of_shards": 1,
+      "number_of_replicas": 0,
+      "refresh_interval": "60s"
+    },
+    "analysis": {
+      "analyzer": {
+        "index_analyzer": {
+          "filter": [
+            "lowercase",
+            "asciifolding",
+            "decimal_digit",
+            "possessive_stem",
+            "synonym",
+            "english_stem",
+            "edge_ngram"
+          ],
+          "tokenizer": "standard"
+        },
+        "query_analyzer": {
+          "filter": [
+            "lowercase",
+            "asciifolding",
+            "decimal_digit",
+            "possessive_stem",
+            "synonym",
+            "english_stem"
+          ],
+          "tokenizer": "standard"
+        }
+      },
+      "filter": {
+        "edge_ngram": {
+          "type": "edgeNGram",
+          "min_gram": "2",
+          "max_gram": "20",
+          "token_chars": [
+            "letter",
+            "digit"
+          ]
+        },
+        "english_stem": {
+          "type": "stemmer",
+          "name": "porter"
+        },
+        "possessive_stem": {
+          "type": "stemmer",
+          "name": "possessive_english"
+        },
+        "synonym": {
+          "type": "synonym",
+          "expand": true,
+          "synonyms_path": "synonyms.txt",
+          "tokenizer": "whitespace"
+        }
+      }
+    }
+  },
+  "mappings": {
+    "label": {
+      "_all": {
+        "enabled": false
+      },
+      "properties": {
+        "text": {
+          "type": "text",
+          "analyzer": "index_analyzer",
+          "search_analyzer": "query_analyzer"
+        },
+        "display": {
+          "type": "text",
+          "analyzer": "index_analyzer",
+          "search_analyzer": "query_analyzer"
+        },
+        "variants": {
+          "type": "text",
+          "analyzer": "index_analyzer",
+          "search_analyzer": "query_analyzer"
+        },
+        "duplicate": {
+          "type": "boolean"
+        },
+        "alpha": {
+          "type": "double"
+        },
+        "beta": {
+          "type" :"double"
+        },
+        "gamma": {
+          "type": "double"
+        },
+        "delta": {
+          "type": "double"
+        }
+      }
+    }
+  }
+}

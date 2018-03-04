@@ -1,0 +1,73 @@
+package net.gmbx.typeahead.demo.config;
+
+import org.apache.http.HttpHost;
+import org.elasticsearch.client.RestClient;
+import org.elasticsearch.client.RestHighLevelClient;
+import org.elasticsearch.client.transport.TransportClient;
+import org.elasticsearch.common.settings.Settings;
+import org.elasticsearch.common.transport.InetSocketTransportAddress;
+import org.elasticsearch.transport.client.PreBuiltTransportClient;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.PropertySource;
+
+import javax.annotation.PostConstruct;
+import javax.annotation.PreDestroy;
+import java.io.IOException;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
+
+@Configuration
+@PropertySource(value = "classpath:data/application.properties")
+public class ElasticsearchConfig {
+
+    @Value("${es.server}")
+    private String server;
+
+    @Value("${es.cluster}")
+    private String clusterName;
+
+    private TransportClient transportClient;
+    private RestClient restClient;
+    private RestHighLevelClient client;
+
+    private static final Logger logger = LoggerFactory.getLogger(ElasticsearchConfig.class);
+
+    @Bean
+    public TransportClient transportClient() throws UnknownHostException {
+
+        Settings esSettings = Settings.builder()
+                .put("cluster.name", clusterName)
+                .build();
+        transportClient = new PreBuiltTransportClient(esSettings)
+                .addTransportAddress(new InetSocketTransportAddress(InetAddress.getByName(server), 9300));
+
+        return transportClient;
+    }
+
+    @PostConstruct
+    public void init() {
+        restClient = RestClient.builder(new HttpHost(server, 9200, "http")).build();
+        client = new RestHighLevelClient(restClient);
+    }
+
+    @PreDestroy
+    public void destroy() throws IOException {
+        logger.info("Closing " + restClient.getClass());
+        restClient.close();
+    }
+
+    @Bean
+    public RestHighLevelClient getClient() {
+        return client;
+    }
+
+    @Bean
+    public RestClient getRestClient() {
+        return restClient;
+    }
+
+}
